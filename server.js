@@ -67,7 +67,7 @@ async function validateSubscription(res, key) {
                 res.status(400).json({ error: "Invalid date format in subscription data." });
             }
         } else {
-            res.status(401).json({ error: "NONE" });
+            res.status(401).json({ massage: "NONE" });
         }
     }
 }
