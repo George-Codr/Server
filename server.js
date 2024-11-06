@@ -16,7 +16,7 @@ app.get('/api', async (req, res) => {
         if (status.includes("ON")) {
             await checkSecondaryStatus(res, key);
         } else if (status.includes("OFF")) {
-            res.status(503).json({ message: "Tool is currently under maintenance." });
+            res.status(503).json({ message: "MAINTENANCE" });
         } else {
             res.status(500).json({ message: "Something went wrong." });
         }
@@ -55,7 +55,7 @@ async function validateSubscription(res, key) {
             res.status(400).json({ error: "Invalid date format in subscription data." });
         }
     } else {
-        res.status(401).json({ error: "No premium subscription active for the provided key." });
+        res.status(401).json({ error: "NONE" });
     }
 }
 
@@ -69,7 +69,7 @@ async function processSubscription(res, userKey, deviceId, username, expiryDate)
     const blockList = await fetchUrl("https://raw.githubusercontent.com/Mahobin-Universe/Importer/refs/heads/main/SAVAGE/bch.txt");
 
     if (blockList.includes(userKey)) {
-        res.status(403).json({ message: "You are a blocked user." });
+        res.status(403).json({ message: "BLOCKED" });
     } else {
         const status = checkExpiration(expiryDate);
         if (status === "ALIVE") {
@@ -79,7 +79,7 @@ async function processSubscription(res, userKey, deviceId, username, expiryDate)
                 EXPIRED_DATE: expiryDate.toISOString()
             });
         } else {
-            res.json({ message: "Your subscription has expired." });
+            res.json({ message: "EXPIRED" });
         }
     }
 }
