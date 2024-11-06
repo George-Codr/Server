@@ -96,8 +96,6 @@ async function processSubscription(res, userKey, deviceId, username, expiryDate)
         if (status === "ALIVE") {
             res.json({
                 WELCOME: username.trim(),
-                DEVICE_ID: deviceId,
-                EXPIRED_DATE: expiryDate.toISOString()
             });
         } else {
             res.json({ message: "EXPIRED" });
