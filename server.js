@@ -38,7 +38,7 @@ async function checkSecondaryStatus(res, key) {
     const checkStatus = await fetchUrl("https://raw.githubusercontent.com/Mahobin-Universe/Importer/refs/heads/main/SAVAGE/ch2.txt");
 
     if (checkStatus.includes("START")) {
-        res.json({ message: "Service started successfully." });
+        res.json({ massage: "ACTIVE" });
     } else if (checkStatus.includes("CHK")) {
         await validateSubscription(res, key);
     } else {
@@ -95,7 +95,7 @@ async function processSubscription(res, userKey, deviceId, username, expiryDate)
         const status = checkExpiration(expiryDate);
         if (status === "ALIVE") {
             res.json({
-                WELCOME: username.trim(),
+                massage: "ACTIVE",
             });
         } else {
             res.json({ message: "EXPIRED" });
