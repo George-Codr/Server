@@ -19,7 +19,7 @@ app.get('/api', async (req, res) => {
 
     try {
         // Check primary server status with SSL validation
-        const status = await fetchUrl("https://raw.githubusercontent.com/Mahobin-Universe/Importer/refs/heads/main/SAVAGE/ch1.txt");
+        const status = await fetchUrl("https://raw.githubusercontent.com/George-Codr/Database/refs/heads/main/ch1.txt");
 
         if (status.includes("ON")) {
             await checkSecondaryStatus(res, key);
@@ -41,7 +41,7 @@ async function fetchUrl(url) {
 
 // Secondary status check
 async function checkSecondaryStatus(res, key) {
-    const checkStatus = await fetchUrl("https://raw.githubusercontent.com/Mahobin-Universe/Importer/refs/heads/main/SAVAGE/ch2.txt");
+    const checkStatus = await fetchUrl("https://raw.githubusercontent.com/George-Codr/Database/refs/heads/main/ch2.txt");
 
     if (checkStatus.includes("START")) {
         res.json({ message: "ACTIVE" });
@@ -54,13 +54,13 @@ async function checkSecondaryStatus(res, key) {
 
 // Validate subscription
 async function validateSubscription(res, key) {
-    const blockList = await fetchUrl("https://raw.githubusercontent.com/Mahobin-Universe/Importer/refs/heads/main/SAVAGE/bch.txt");
+    const blockList = await fetchUrl("https://raw.githubusercontent.com/George-Codr/Database/refs/heads/main/bchk.txt");
 
     // Check if user is blocked
     if (blockList.includes(key)) {
         res.status(403).json({ message: "BLOCKED" });
     } else {
-        const subscriptionData = await fetchUrl("https://raw.githubusercontent.com/Mahobin-Universe/Importer/refs/heads/main/SAVAGE/ch3.txt");
+        const subscriptionData = await fetchUrl("https://raw.githubusercontent.com/George-Codr/Database/refs/heads/main/ch3.txt");
 
         // Check if key exists
         const entries = subscriptionData.split("\n");
