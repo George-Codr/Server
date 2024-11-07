@@ -1,8 +1,14 @@
 const express = require('express');
 const axios = require('axios');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// HTTPS agent with SSL validation
+const httpsAgent = new https.Agent({
+    rejectUnauthorized: true  // Ensure SSL certificates are validated
+});
 
 // Route handler
 app.get('/api', async (req, res) => {
@@ -12,7 +18,7 @@ app.get('/api', async (req, res) => {
     }
 
     try {
-        // Check primary server status
+        // Check primary server status with SSL validation
         const status = await fetchUrl("https://raw.githubusercontent.com/Mahobin-Universe/Importer/refs/heads/main/SAVAGE/ch1.txt");
 
         if (status.includes("ON")) {
@@ -27,9 +33,9 @@ app.get('/api', async (req, res) => {
     }
 });
 
-// Fetch content from URL
+// Fetch content from URL with axios and SSL validation
 async function fetchUrl(url) {
-    const response = await axios.get(url);
+    const response = await axios.get(url, { httpsAgent });
     return response.data;
 }
 
@@ -38,7 +44,7 @@ async function checkSecondaryStatus(res, key) {
     const checkStatus = await fetchUrl("https://raw.githubusercontent.com/Mahobin-Universe/Importer/refs/heads/main/SAVAGE/ch2.txt");
 
     if (checkStatus.includes("START")) {
-        res.json({ massage: "ACTIVE" });
+        res.json({ message: "ACTIVE" });
     } else if (checkStatus.includes("CHK")) {
         await validateSubscription(res, key);
     } else {
@@ -57,17 +63,20 @@ async function validateSubscription(res, key) {
         const subscriptionData = await fetchUrl("https://raw.githubusercontent.com/Mahobin-Universe/Importer/refs/heads/main/SAVAGE/ch3.txt");
 
         // Check if key exists
-        if (subscriptionData.includes(key)) {
-            const [userKey, deviceId, expiryDate, username] = subscriptionData.split("|");
+        const entries = subscriptionData.split("\n");
+        const userEntry = entries.find(entry => entry.includes(key));
+
+        if (userEntry) {
+            const [userKey, deviceId, expiryDate, username] = userEntry.split("|");
 
             if (isValidDate(expiryDate)) {
                 const expiry = parseDate(expiryDate);
-                await processSubscription(res, userKey, deviceId, username, expiry);
+                await processSubscription(res, userKey, deviceId, username, expiry, blockList);
             } else {
                 res.status(400).json({ error: "Invalid date format in subscription data." });
             }
         } else {
-            res.status(401).json({ massage: "NONE" });
+            res.status(401).json({ message: "NONE" });
         }
     }
 }
@@ -85,9 +94,7 @@ function parseDate(dateString) {
 }
 
 // Process subscription with block list check
-async function processSubscription(res, userKey, deviceId, username, expiryDate) {
-    const blockList = await fetchUrl("https://raw.githubusercontent.com/Mahobin-Universe/Importer/refs/heads/main/SAVAGE/bch.txt");
-
+async function processSubscription(res, userKey, deviceId, username, expiryDate, blockList) {
     // Check if user is blocked
     if (blockList.includes(userKey)) {
         res.status(403).json({ message: "BLOCKED" });
@@ -95,7 +102,10 @@ async function processSubscription(res, userKey, deviceId, username, expiryDate)
         const status = checkExpiration(expiryDate);
         if (status === "ALIVE") {
             res.json({
-                massage: "ACTIVE",
+                message: "ACTIVE",
+                user: username,
+                device: deviceId,
+                expires: expiryDate
             });
         } else {
             res.json({ message: "EXPIRED" });
